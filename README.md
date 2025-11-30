@@ -1,6 +1,8 @@
-Hello world# Data Preprocessing Steps Explained
+Hello world
 
-This document explains the steps we took to prepare the tennis dataset for machine learning.
+# Data Preprocessing Steps Explained
+
+This document explains the steps we took to prepare the tennis dataset for machine learning, following **best practices** to ensure a robust and reliable model.
 
 ## 1. Defining the Goal (Target Variable)
 We want to predict **who wins** the match.
@@ -19,35 +21,30 @@ We carefully selected which columns (features) to use for prediction (`X`).
     - `Winner` & `Score`: These are the *outcome*. Using them would be "cheating" (Data Leakage).
     - `Tournament`, `Player_1`, `Player_2`: These have too many unique values (high cardinality). Including them without special techniques would create thousands of unnecessary columns and confuse the model.
 
-## 3. Cleaning the Data (Imputation)
-Real-world data often has missing values. In this dataset, missing data was marked as `-1`.
-- **The Problem**: Machine learning models generally cannot handle missing data.
+## 3. The Golden Rule: Split BEFORE You Touch (Train/Test Split)
+**Crucial Step**: Before we did any cleaning or calculations, we split the data into two parts:
+1.  **Training Set (80%)**: The data the model learns from.
+2.  **Test Set (20%)**: The "exam" questions the model has never seen.
+
+**Why?**
+If we calculated averages (like median for missing values) using the *entire* dataset, information from the Test Set would "leak" into the Training Set. This is called **Data Leakage**, and it makes the model look better than it actually is. By splitting first, we ensure the Test Set remains completely pure and unseen.
+
+## 4. Cleaning the Data (Imputation)
+Real-world data often has missing values (marked as `-1`).
 - **The Fix**: We used a `SimpleImputer`.
-    1.  We replaced all `-1` values with `NaN` (standard computer code for "missing").
-    2.  We filled these empty spots with the **median** value of that column.
-    - *Analogy*: If a student misses a test, giving them the class average score is a safe way to estimate their performance without ruining the data.
+- **Important**: We calculated the median *only* from the **Training Set**. We then used that same number to fill gaps in both the Training and Test sets.
 
-## 4. Leveling the Playing Field (Scaling)
-The numerical data has very different ranges:
-- **Ranks**: 1 to 100.
-- **Points**: 0 to 16,000.
-- **Odds**: 1.0 to 50.0.
-- **The Problem**: The model might think "Points" are 100x more important than "Rank" just because the numbers are bigger.
+## 5. Leveling the Playing Field (Scaling)
+The numerical data has very different ranges (Ranks 1-100 vs Points 0-16,000).
 - **The Fix**: We used a `StandardScaler`.
-    - It adjusts all numbers so they have a mean of 0 and a standard deviation of 1.
-    - Now, all features compete on equal footing.
+- **Important**: We learned the mean and standard deviation *only* from the **Training Set**. We then applied this scaling to both sets. This simulates the real world where we don't know the distribution of future data.
 
-## 5. Translating Words to Numbers (One-Hot Encoding)
-Computers do not understand text like "Hard Court" or "Grass".
+## 6. Translating Words to Numbers (One-Hot Encoding)
+Computers do not understand text like "Hard Court".
 - **The Fix**: We used `OneHotEncoder`.
-- It creates a new binary (0 or 1) column for every category.
-- **Example**: The `Surface` column becomes:
-    - `Surface_Clay`: 1 if Clay, else 0.
-    - `Surface_Hard`: 1 if Hard, else 0.
-    - `Surface_Grass`: 1 if Grass, else 0.
+- It creates a new binary (0 or 1) column for every category (e.g., `Surface_Clay`, `Surface_Hard`).
 
-## 6. The Assembly Line (Pipeline)
+## 7. The Assembly Line (Pipeline)
 We wrapped all these steps into a **Pipeline**.
-- **What is it?**: A set of instructions that run in order.
 - **Flow**: `Raw Data` -> `Imputer` -> `Scaler` -> `Encoder` -> `Clean Data`.
-- **Benefit**: This ensures that any new data (like next year's matches) is processed *exactly* the same way as our training data, preventing errors.
+- **Benefit**: The pipeline handles the complexity of "Fit on Train, Transform on Test" automatically, preventing mistakes and leakage.
