@@ -2,6 +2,9 @@ import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
 from sklearn.linear_model import LogisticRegression
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 from src.dashboard.components.navigation import sidebar_navigation
 from src.dashboard.components.mermaid import render_mermaid
 from src.dashboard.components.toy_datasets import generate_moons, generate_linear

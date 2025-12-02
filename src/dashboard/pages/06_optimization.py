@@ -1,6 +1,9 @@
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 from src.dashboard.components.navigation import sidebar_navigation
 
 st.set_page_config(page_title="Gradient Descent", page_icon="📉", layout="wide")

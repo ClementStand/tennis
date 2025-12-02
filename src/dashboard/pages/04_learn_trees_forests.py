@@ -4,6 +4,9 @@ import pandas as pd
 import plotly.graph_objects as go
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 from src.dashboard.components.navigation import sidebar_navigation
 from src.dashboard.components.mermaid import render_mermaid
 from src.dashboard.components.toy_datasets import generate_moons, generate_circles
