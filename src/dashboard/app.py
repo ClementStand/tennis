@@ -1,4 +1,14 @@
 import streamlit as st
+import sys
+import os
+from pathlib import Path
+
+# Add the project root to sys.path to allow absolute imports from 'src'
+# This is necessary for Streamlit Cloud deployment
+root_path = Path(__file__).resolve().parent.parent.parent
+if str(root_path) not in sys.path:
+    sys.path.append(str(root_path))
+
 from src.dashboard.components.navigation import sidebar_navigation
 from src.dashboard.config import DATA_PATH
 import pandas as pd
