@@ -11,13 +11,20 @@ def render_mermaid(code: str, height: int = 400):
 
     components.html(
         f"""
-        <div class="mermaid">
-            {clean_code}
-        </div>
-        <script type="module">
-            import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-            mermaid.initialize({{ startOnLoad: true }});
-        </script>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <script type="module">
+                import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+                mermaid.initialize({{ startOnLoad: true }});
+            </script>
+        </head>
+        <body>
+            <div class="mermaid">
+                {clean_code}
+            </div>
+        </body>
+        </html>
         """,
         height=height,
     )
