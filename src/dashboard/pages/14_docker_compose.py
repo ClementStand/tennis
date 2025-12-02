@@ -7,64 +7,119 @@ sidebar_navigation()
 
 st.title("📦 Docker Compose: The Conductor")
 
-# --- LAYER 1: Intuition ---
-st.header("1. Intuition: The Sheet Music 🎼")
 st.markdown("""
-*   **Docker Run**: Playing a solo. You have to manually start the drums, then the guitar, then the vocals.
-*   **Docker Compose**: The Conductor's Score.
-    *   "Start the Drums."
-    *   "Start the Guitar."
-    *   "Make sure they are on the same stage (Network)."
-    *   "If the Drums crash, restart them."
-
-It turns a manual process into a **Declarative** one. You describe *what* you want, not *how* to do it.
+> **"One container is a solo artist. A system is an orchestra."**
+> Docker Compose is the sheet music that keeps everyone playing in sync.
 """)
-st.markdown("---")
 
-# --- LAYER 3: Structure ---
-st.header("3. Structure: The YAML File 📄")
+# --- SECTION 1: ORCHESTRATION 101 ---
+st.header("1. Orchestration 101: The Problem 😫")
+st.markdown("Imagine you have a full application. It needs:")
+st.markdown("""
+1.  A **Python Backend** (API).
+2.  A **Postgres Database** (Storage).
+3.  A **Redis Cache** (Speed).
+""")
+
+st.markdown("Without Compose, you have to type this **every single time**:")
 st.code("""
-version: '3.8'
-services:
-  web:
-    image: nginx
-    ports:
-      - "8080:80"
-    depends_on:
-      - db
+docker run -d --name my-db postgres
+docker run -d --name my-redis redis
+docker run -d --name my-app --link my-db --link my-redis -p 80:80 my-image
+""", language="bash")
 
-  db:
-    image: postgres
-    environment:
-      POSTGRES_PASSWORD: secret
-""", language="yaml")
+st.error("This is painful. It's hard to remember, hard to share, and hard to update.")
 
-st.markdown("""
-*   **Services**: The instruments (Containers).
-*   **Networks**: The stage. (Compose creates a default network for you).
-*   **Volumes**: The storage closet.
-""")
 st.markdown("---")
 
-# --- LAYER 4: Step-by-Step ---
-st.header("4. Step-by-Step: `docker-compose up` 👣")
+# --- SECTION 2: THE SOLUTION (YAML) ---
+st.header("2. The Solution: Infrastructure as Code 📄")
 st.markdown("""
-1.  **Read**: Parse `docker-compose.yml`.
-2.  **Network**: Create a new bridge network `myapp_default`.
-3.  **Volumes**: Create persistent volumes.
-4.  **Pull**: Download images if missing.
-5.  **Start DB**: Start the database first (because `web` depends on it).
-6.  **Start Web**: Start the web server.
-7.  **DNS**: Add `db` and `web` to the internal DNS so they can find each other.
+We write a file called `docker-compose.yml`.
+This file describes the **Desired State** of your system.
 """)
+
+col_code, col_explain = st.columns([1, 1])
+
+with col_code:
+    st.code("""
+    version: '3.8'  # The grammar version
+
+    services:       # The list of instruments
+
+      backend:      # Service Name (DNS Name)
+        build: .    # Build from current folder
+        ports:
+          - "5000:5000"
+        depends_on:
+          - db      # Wait for DB to start
+        environment:
+          DB_HOST: db
+
+      db:           # Service Name (DNS Name)
+        image: postgres:13
+        volumes:
+          - pgdata:/var/lib/postgresql/data
+
+    volumes:        # Persistent Storage
+      pgdata:
+    """, language="yaml")
+
+with col_explain:
+    st.markdown("""
+    *   **Services**: The containers we want to run.
+    *   **Build**: "Build this Dockerfile" (instead of just downloading an image).
+    *   **Depends On**: "Don't start the Backend until the DB is ready."
+    *   **Volumes**: "Create a named storage box called `pgdata` so we don't lose data when the DB restarts."
+    *   **Magic DNS**: The backend can just connect to `host="db"`. Docker makes that name work automatically.
+    """)
+
 st.markdown("---")
 
-# --- LAYER 9: Exercises ---
-st.header("9. Exercises 📝")
+# --- SECTION 3: THE LIFECYCLE ---
+st.header("3. The Lifecycle: Up and Down 🔄")
+
+st.markdown("Compose gives you simple commands to manage the entire orchestra.")
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.success("**docker-compose up**")
+    st.markdown("Creates networks, volumes, builds images, and starts containers. **Everything.**")
+with col2:
+    st.warning("**docker-compose down**")
+    st.markdown("Stops containers and **removes** them. It cleans up the network. (It keeps volumes safe).")
+with col3:
+    st.info("**docker-compose logs -f**")
+    st.markdown("Follows the logs of *all* services in one stream. Great for debugging.")
+
+st.markdown("---")
+
+# --- SECTION 4: NETWORKING MAGIC ---
+st.header("4. Networking Magic 🪄")
+st.markdown("Compose automatically creates a **Shared Network** for your app.")
+
+render_mermaid("""
+graph LR
+    subgraph Compose_Network ["myapp_default (Network)"]
+        BE["Backend Service"]
+        DB["Database Service"]
+        Redis["Redis Service"]
+    end
+
+    BE <-->|can ping 'db'| DB
+    BE <-->|can ping 'redis'| Redis
+    DB <--> Redis
+""", height=250)
+
+st.markdown("You don't need to create a bridge manually. Compose does it for you.")
+
+st.markdown("---")
+
+# --- SECTION 5: EXERCISES ---
+st.header("5. Exercises 📝")
 st.info("""
-1.  **Create**: A file `docker-compose.yml` with the content above.
-2.  **Run**: `docker-compose up`.
-3.  **Verify**: Open `localhost:8080`.
-4.  **Stop**: Press `Ctrl+C`.
-5.  **Clean**: `docker-compose down`.
+1.  **Create**: Save the YAML above as `docker-compose.yml`.
+2.  **Run**: `docker-compose up -d` (Detached mode, runs in background).
+3.  **Check**: `docker-compose ps`. See them running?
+4.  **Stop**: `docker-compose down`. Poof! They are gone.
 """)

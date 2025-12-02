@@ -7,71 +7,86 @@ sidebar_navigation()
 
 st.title("💻 Computer Architecture & The OS")
 
-# --- LAYER 1: Intuition ---
-st.header("1. Intuition: The Restaurant Kitchen 🍳")
 st.markdown("""
-Imagine your computer is a busy **Restaurant Kitchen**.
-
-*   **CPU (The Chef)**: Super fast, but can only do one thing at a time.
-*   **RAM (The Countertop)**: Fast access to ingredients. Small space. Cleared when lights go out.
-*   **Disk (The Freezer)**: Huge storage, but slow. You have to walk to get things.
-*   **Kernel (The Manager)**: Tells the Chef what to cook. Ensures no one steals ingredients.
-*   **Process (The Order)**: "Table 4 wants Pasta". A set of instructions.
+> **"Everything is a file."** - Unix Philosophy
+> To understand Docker, you must understand the Operating System it lives on.
 """)
+
+# --- SECTION 1: THE HARDWARE (THE KITCHEN) ---
+st.header("1. The Hardware: The Kitchen 🍳")
+st.markdown("Your computer is a restaurant kitchen.")
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.info("**CPU (The Chef)**")
+    st.markdown("The brain. It chops, cooks, and plates. It is super fast but can only do one thing at a time (per core).")
+with col2:
+    st.warning("**RAM (The Countertop)**")
+    st.markdown("Where the Chef works. Fast access to ingredients. Small space. If the power goes out, the food is lost.")
+with col3:
+    st.success("**Disk (The Freezer)**")
+    st.markdown("Where ingredients are stored. Huge space, but slow. The Chef has to walk to the back to get things.")
+
 st.markdown("---")
 
-# --- LAYER 3: Structure ---
-st.header("3. Structure: User Space vs Kernel Space 🧱")
+# --- SECTION 2: THE KERNEL (THE MANAGER) ---
+st.header("2. The Kernel: The Manager 👔")
+st.markdown("""
+The **Kernel** is the boss.
+*   **Resource Management**: "Chef, stop chopping onions (App A) and start grilling steak (App B)." (**Scheduling**).
+*   **Security**: "App A, you are NOT allowed to touch App B's ingredients." (**Memory Isolation**).
+*   **Hardware Abstraction**: "I don't care if it's an SSD or HDD, just save this file."
+""")
+
 render_mermaid("""
 graph TD
-    subgraph User_Space ["User Space (Unprivileged)"]
-        App1["Chrome"]
-        App2["Python Script"]
-        App3["Docker Container"]
+    App1["Chrome"] -->|System Call| Kernel
+    App2["Spotify"] -->|System Call| Kernel
+
+    subgraph OS ["Operating System"]
+        Kernel["The Kernel"]
     end
 
-    subgraph Boundary ["System Call Interface"]
-        SysCall["The Gatekeeper"]
-    end
+    Kernel --> CPU
+    Kernel --> RAM
+    Kernel --> Disk
+""", height=350)
 
-    subgraph Kernel_Space ["Kernel Space (Privileged)"]
-        Kernel["The Kernel (Boss)"]
-        Drivers["Device Drivers"]
-        Hardware["Physical Hardware"]
-    end
-
-    App2 -->|1. print('Hello')| SysCall
-    SysCall -->|2. write()| Kernel
-    Kernel -->|3. Draw Pixels| Hardware
-""", height=400)
-
-st.markdown("""
-*   **User Space**: Where your apps live. They are **Sandboxed**. They cannot touch hardware directly.
-*   **Kernel Space**: The only code allowed to touch the metal.
-*   **System Call**: The *only* way an app can ask the Kernel for help (e.g., "Open file", "Send network packet").
-""")
 st.markdown("---")
 
-# --- LAYER 5: Full Math ---
-st.header("5. The Math: Virtual Memory 🧮")
-st.markdown("How does the Kernel trick apps into thinking they have infinite RAM?")
-st.markdown("**The Mapping Function:**")
-st.latex(r"PhysicalAddress = PageTable(VirtualAddress)")
-
+# --- SECTION 3: THE PROCESS (THE ORDER) ---
+st.header("3. The Process: The Order 🧾")
 st.markdown("""
-*   **Virtual Address**: What the app sees (e.g., `0x00A1`).
-*   **Physical Address**: Where the data actually is in the RAM stick (e.g., `Row 99, Col 3`).
-*   **Page Table**: A dictionary maintained by the Kernel.
-    *   `{Process A: {0x00A1: RAM_Slot_5}}`
-    *   `{Process B: {0x00A1: RAM_Slot_99}}`
-*   **Result**: Two apps can use the *same* address (`0x00A1`) but point to *different* physical memory. **Total Isolation.**
+A **Program** is a recipe book (static file on disk).
+A **Process** is the Chef actually cooking that recipe (running in RAM).
+
+Every Process has:
+1.  **PID (Process ID)**: A unique ticket number (e.g., 1042).
+2.  **Memory**: Its own private chunk of the Countertop.
+3.  **File Descriptors**: Which files it has open.
 """)
+
 st.markdown("---")
 
-# --- LAYER 9: Exercises ---
-st.header("9. Exercises 📝")
+# --- SECTION 4: SYSTEM CALLS (THE BELL) ---
+st.header("4. System Calls: Ringing the Bell 🔔")
+st.markdown("""
+Apps are **Unprivileged**. They cannot touch the hardware directly.
+If Chrome wants to save a file, it cannot write to the disk.
+It must **ask the Kernel**.
+
+1.  Chrome: "Hey Kernel, please write 'hello' to `test.txt`." (**write() syscall**)
+2.  Kernel: "Do you have permission? Yes. Okay, I'll do it."
+3.  Kernel: Writes to disk.
+4.  Kernel: "Done."
+""")
+
+st.markdown("---")
+
+# --- SECTION 5: EXERCISES ---
+st.header("5. Exercises 📝")
 st.info("""
-1.  **Run**: Open a terminal and run `top`.
-2.  **Find**: Which process is using the most CPU?
-3.  **Identify**: Find the `PID` (Process ID). This is the number the Kernel uses to track the "Order Ticket".
+1.  **Top**: Run `top` (or `htop`) in your terminal. Watch the Chef work.
+2.  **Kill**: Find a PID and run `kill <PID>`. You just told the Manager to fire that order.
+3.  **Files**: Run `ls -l /proc`. This is the Kernel exposing its internal state as files!
 """)
