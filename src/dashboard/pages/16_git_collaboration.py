@@ -13,13 +13,12 @@ st.markdown("""
 > The answer is **Branching**.
 """)
 
-# --- SECTION 1: THE MULTIVERSE (BRANCHING) ---
-st.header("1. The Multiverse: Parallel Timelines 🌌")
+# --- SECTION 1: BRANCHING ---
+st.header("1. The Multiverse: Branches 🌌")
 st.markdown("""
-Imagine you want to try a crazy experiment. You don't want to blow up the main lab.
-So you create a **Parallel Universe**.
-*   **Main Branch**: The stable, production code. The "Real World".
-*   **Feature Branch**: Your playground. You can break things here. It doesn't affect Main.
+**Objective**: Simultaneous stability and development.
+*   **Main Branch**: The "Production" version. Always stable.
+*   **Feature Branch**: An independent line of development. You can break things here safely.
 """)
 
 render_mermaid("""
@@ -37,43 +36,79 @@ graph LR
     style F2 fill:#fff9c4
 """, height=300)
 
-st.markdown("---")
+st.code("""
+# Create a new branch and switch to it
+git checkout -b new-feature
 
-# --- SECTION 2: THE MERGE (CONVERGENCE) ---
-st.header("2. The Merge: Bringing it Back 🔀")
+# Switch back to main
+git checkout main
+
+# Delete a branch (Safe)
+git branch -d feature-branch
+
+# Force Delete (Dangerous - if not merged)
+git branch -D feature-branch
+""", language="bash")
+
+# --- SECTION 2: MERGING STRATEGIES ---
+st.header("2. Merging Strategies 🔀")
+st.markdown("How do we bring the history back together?")
+
+tab_ff, tab_merge, tab_rebase = st.tabs(["Fast-Forward", "Merge Commit", "Rebase"])
+
+with tab_ff:
+    st.subheader("Fast-Forward (FF)")
+    st.markdown("""
+    *   **Condition**: Main has NOT moved since you branched off.
+    *   **Action**: Git just moves the `main` pointer forward.
+    *   **Result**: Linear history. No "Merge Bubble".
+    """)
+
+with tab_merge:
+    st.subheader("Merge Commit (--no-ff)")
+    st.markdown("""
+    *   **Condition**: Main HAS moved (diverged).
+    *   **Action**: Git creates a new "Merge Commit" with two parents.
+    *   **Result**: Preserves the history of the branch.
+    """)
+    render_mermaid("""
+    graph LR
+        M1 --> M2
+        M2 --> M3
+        M2 --> F1
+        F1 --> F2
+        F2 --> Merge
+        M3 --> Merge
+    """, height=200)
+
+with tab_rebase:
+    st.subheader("Rebase (Advanced)")
+    st.markdown("""
+    *   **Action**: Pick up your commits and move them to the tip of Main.
+    *   **Result**: Perfectly linear history.
+    *   **Warning**: Do NOT rebase shared branches!
+    """)
+
+# --- SECTION 3: FETCH vs PULL ---
+st.header("3. Fetch vs Pull 📥")
+st.markdown("How do we get updates from the Cloud?")
+
+col1, col2 = st.columns(2)
+with col1:
+    st.info("**git fetch**")
+    st.markdown("Downloads the data but **DOES NOT** touch your code.")
+    st.markdown("Safe. Lets you inspect changes before merging.")
+with col2:
+    st.warning("**git pull**")
+    st.markdown("`git fetch` + `git merge`.")
+    st.markdown("Downloads AND tries to merge immediately.")
+    st.markdown("Convenient, but can cause surprise conflicts.")
+
+# --- SECTION 4: CONFLICTS ---
+st.header("4. Conflicts ⚔️")
 st.markdown("""
-You finished your experiment. It works! Now you want to bring it back to the Real World.
-This is a **Merge**.
-Git takes your changes from `Feature` and replays them onto `Main`.
+When two people edit the *same line* of the *same file*.
 """)
-
-render_mermaid("""
-graph LR
-    M1((Main 1)) --> M2((Main 2))
-    M2 --> M3((Main 3))
-    M3 --> Merge((Merge))
-
-    M2 --> F1((Feature 1))
-    F1 --> F2((Feature 2))
-    F2 --> Merge
-
-    style Merge fill:#d1c4e9
-""", height=300)
-
-st.markdown("---")
-
-# --- SECTION 3: CONFLICTS (THE BATTLE) ---
-st.header("3. Conflicts: When Universes Collide ⚔️")
-st.markdown("""
-What if:
-1.  **You** changed Line 10 of `app.py` to say `print("Hello")`.
-2.  **Your Friend** changed Line 10 of `app.py` to say `print("Goodbye")`.
-3.  You try to merge.
-
-Git panics. **"I don't know which one is right!"**
-This is a **Merge Conflict**.
-""")
-
 st.code("""
 <<<<<<< HEAD
 print("Goodbye")
@@ -81,33 +116,29 @@ print("Goodbye")
 print("Hello")
 >>>>>>> feature-branch
 """, language="python")
+st.markdown("Delete the markers, choose the winner, and commit.")
 
+# --- SECTION 5: PULL REQUESTS & FORKING ---
+st.header("5. Pull Requests & Forking 🍴")
+
+st.subheader("Single Repo PR")
+st.markdown("You and your team share one repo. You make branches and PRs.")
+
+st.subheader("Multi-Repo PR (Forking)")
 st.markdown("""
-**How to fix it:**
-1.  Open the file.
-2.  Delete the weird markers (`<<<<`, `====`, `>>>>`).
-3.  Pick the code you want (or combine them).
-4.  Save and Commit.
+You want to contribute to **Open Source** (e.g., Scikit-Learn). You don't have permission to push there.
+1.  **Fork**: Copy their repo to YOUR GitHub account.
+2.  **Clone**: Download your fork.
+3.  **Branch & Commit**: Do your work.
+4.  **Push**: Push to YOUR fork.
+5.  **PR**: Ask the original owner to pull from your fork.
 """)
 
-st.markdown("---")
-
-# --- SECTION 4: PULL REQUESTS (CODE REVIEW) ---
-st.header("4. Pull Requests: The Gatekeeper 🛡️")
-st.markdown("""
-In professional teams, you don't just merge. You open a **Pull Request (PR)**.
-*   "Hey team, I want to merge my Feature branch into Main."
-*   The team reviews your code. "Change this variable name." "Fix this bug."
-*   Once approved, you click the **Merge Button**.
-""")
-
-st.markdown("---")
-
-# --- SECTION 5: EXERCISES ---
-st.header("5. Exercises 📝")
+# --- SECTION 6: EXERCISES ---
+st.header("6. Exercises 📝")
 st.info("""
-1.  **Branch**: `git checkout -b new-feature`.
-2.  **Change**: Make a change and commit it.
-3.  **Switch**: `git checkout main`. Notice your change is GONE! (It's safe in the other universe).
-4.  **Merge**: `git merge new-feature`. Now your change appears in Main.
+1.  **Branch**: Create `experiment`. Make a commit.
+2.  **FF Merge**: Go to `main`. Merge `experiment`. (Should be Fast-Forward).
+3.  **Conflict**: Create `conflict-branch`. Change Line 1. Go to `main`. Change Line 1. Merge. Fix it.
+4.  **Fetch**: Run `git fetch`. Run `git status`.
 """)

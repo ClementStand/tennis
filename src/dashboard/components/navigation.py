@@ -25,8 +25,10 @@ def sidebar_navigation():
     st.sidebar.page_link("pages/12_docker_basics.py", label="2. Docker Basics", icon="🐳")
     st.sidebar.page_link("pages/13_docker_networking.py", label="3. Docker Networking", icon="🌐")
     st.sidebar.page_link("pages/14_docker_compose.py", label="4. Docker Compose", icon="📦")
-    st.sidebar.page_link("pages/15_git_basics.py", label="5. Git Basics", icon="🌿")
-    st.sidebar.page_link("pages/16_git_collaboration.py", label="6. Git Collaboration", icon="🤝")
+    st.sidebar.page_link("pages/18_docker_advanced.py", label="5. Docker Advanced", icon="🚀")
+    st.sidebar.page_link("pages/15_git_basics.py", label="Git Basics", icon="🌿")
+    st.sidebar.page_link("pages/16_git_collaboration.py", label="Git Collaboration", icon="🤝")
+    st.sidebar.page_link("pages/17_git_advanced.py", label="Git Advanced", icon="🧠")
 
     st.sidebar.markdown("---")
     st.sidebar.page_link("pages/02_model_playground.py", label="🎮 Model Playground", icon="🎮")

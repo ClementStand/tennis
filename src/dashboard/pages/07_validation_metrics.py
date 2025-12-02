@@ -133,6 +133,27 @@ with col_viz:
     c3.metric("F1 Score", f"{f1:.2f}")
     c4.metric("Accuracy", f"{(tp+tn)/(2*n):.2f}")
 
+# --- 7. How to do it in Python ---
+st.header("7. How to do it in Python 🐍")
+st.code("""
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
+
+# 1. Get Predictions
+y_pred = model.predict(X_test)
+y_prob = model.predict_proba(X_test)[:, 1]
+
+# 2. Calculate Metrics
+acc = accuracy_score(y_test, y_pred)
+prec = precision_score(y_test, y_pred)
+rec = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_prob)
+
+# 3. Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+print(f"Confusion Matrix:\\n{cm}")
+""", language="python")
+
 # --- 8. Super Summary ---
 st.header("8. Super Summary 🦸")
 st.info(r"""

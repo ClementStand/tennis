@@ -208,11 +208,49 @@ with tab2:
         fig_rf.update_layout(title=f"Random Forest ({n_estimators} Trees)", height=500)
         st.plotly_chart(fig_rf, use_container_width=True)
 
-    # --- 8. Super Summary ---
+    # --- 7. How to do it in Python ---
+st.header("7. How to do it in Python 🐍")
+tab_dt_code, tab_rf_code = st.tabs(["Decision Tree", "Random Forest"])
+
+with tab_dt_code:
+    st.code("""
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+
+# 1. Initialize
+dt = DecisionTreeClassifier(max_depth=3, criterion='gini')
+
+# 2. Train
+dt.fit(X_train, y_train)
+
+# 3. Predict
+y_pred = dt.predict(X_test)
+
+# 4. Visualize
+plot_tree(dt, feature_names=feature_names, filled=True)
+    """, language="python")
+
+with tab_rf_code:
+    st.code("""
+from sklearn.ensemble import RandomForestClassifier
+
+# 1. Initialize
+rf = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=42)
+
+# 2. Train
+rf.fit(X_train, y_train)
+
+# 3. Predict
+y_prob = rf.predict_proba(X_test)[:, 1]
+
+# 4. Feature Importance
+print(rf.feature_importances_)
+    """, language="python")
+
+# --- 8. Super Summary ---
     st.subheader("8. Super Summary 🦸")
     st.info(r"""
     *   **Decision Tree**: A set of If-Then rules (20 Questions).
     *   **Gini Impurity**: The math behind "Good Questions".
     *   **Random Forest**: A democracy of trees.
     *   **Key Insight**: Averaging many "okay" models creates one "super" model.
-    """)
+""")

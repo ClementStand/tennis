@@ -9,7 +9,7 @@ from src.dashboard.components.navigation import sidebar_navigation
 st.set_page_config(page_title="Hyperparameters", page_icon="🎛", layout="wide")
 sidebar_navigation()
 
-st.title("🎛 Hyperparameters: Tuning the Engine")
+st.title("🎛 Hyperparameters & Cross-Validation")
 
 # --- 1. Core Model Definition ---
 st.header("1. Core Model Definition")
@@ -23,7 +23,7 @@ Examples:
 *   **Optimization**: Learning Rate, Batch Size.
 """)
 
-# --- 2. The Bias-Variance Tradeoff (Platinum Depth) ---
+# --- 2. The Bias-Variance Tradeoff ---
 st.header("2. The Bias-Variance Tradeoff")
 st.markdown(r"""
 The Holy Grail of ML is **Generalization**.
@@ -38,54 +38,111 @@ We decompose the Error into three parts:
 
 st.latex(r"E[\text{Total Error}] = \text{Bias}^2 + \text{Variance} + \text{Noise}")
 
-# --- 3. Search Strategies (Platinum Depth) ---
-st.header("3. Search Strategies")
-st.markdown("How do we find the best settings? It's a search problem in high-dimensional space.")
+# --- 3. Cross-Validation (Platinum Depth) ---
+st.header("3. Cross-Validation: The Exam Analogy 📝")
+st.markdown(r"""
+How do we know if our model is good?
 
-tab_grid, tab_rand, tab_bayes = st.tabs(["Grid Search", "Random Search", "Bayesian Opt"])
+**The Analogy**:
+*   **Training Set**: The Textbook. You study this to learn.
+*   **Validation Set**: The Practice Exam. You use this to tune your study habits (Hyperparameters).
+*   **Test Set**: The Final Exam. You only see this ONCE at the very end.
+
+**The Golden Rule**: NEVER tune on the Test Set. That is cheating (Data Leakage).
+""")
+
+st.subheader("The Algorithms")
+tab_kfold, tab_strat, tab_time = st.tabs(["K-Fold CV", "Stratified K-Fold", "Time Series Split"])
+
+with tab_kfold:
+    st.markdown("**K-Fold Cross-Validation**")
+    st.markdown("""
+    1.  Split data into $K$ equal chunks (Folds).
+    2.  Train on $K-1$ folds.
+    3.  Validate on the remaining 1 fold.
+    4.  Repeat $K$ times, rotating the validation fold.
+    5.  **Final Score**: Average of the $K$ scores.
+    """)
+    st.info("Robust because every data point gets to be in the validation set exactly once.")
+    st.code("""
+from sklearn.model_selection import cross_val_score, KFold
+from sklearn.linear_model import LogisticRegression
+
+model = LogisticRegression()
+cv = KFold(n_splits=5, shuffle=True, random_state=42)
+scores = cross_val_score(model, X, y, cv=cv, scoring='accuracy')
+
+print(f"Average Accuracy: {scores.mean():.2f}")
+    """, language="python")
+
+with tab_strat:
+    st.markdown("**Stratified K-Fold** (Crucial for Imbalanced Data)")
+    st.markdown("""
+    If you have 90% Class A and 10% Class B, a random split might give you a fold with **zero** Class B.
+    **Stratified** splitting ensures each fold has the **same percentage** of samples for each class as the complete set.
+    """)
+    st.warning("ALWAYS use this for Classification problems.")
+    st.code("""
+from sklearn.model_selection import StratifiedKFold
+
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+# Usage is identical to KFold
+scores = cross_val_score(model, X, y, cv=cv, scoring='f1')
+    """, language="python")
+
+with tab_time:
+    st.markdown("**Time Series Split** (Crucial for Tennis/Finance)")
+    st.markdown("""
+    You cannot shuffle time!
+    *   **Wrong**: Train on 2024, Validate on 2023. (Leakage: Future predicts Past).
+    *   **Right**: Train on Jan-Mar, Validate on Apr. Train on Jan-Apr, Validate on May.
+    """)
+    st.code("""
+from sklearn.model_selection import TimeSeriesSplit
+
+cv = TimeSeriesSplit(n_splits=5)
+for train_index, val_index in cv.split(X):
+    X_train, X_val = X[train_index], X[val_index]
+    y_train, y_val = y[train_index], y[val_index]
+    # Train and Evaluate...
+    """, language="python")
+
+# --- 4. Search Strategies ---
+st.header("4. Search Strategies")
+st.markdown("How do we find the best settings? It's a search problem.")
+
+tab_grid, tab_rand = st.tabs(["Grid Search", "Random Search"])
 
 with tab_grid:
     st.subheader("Grid Search 🕸️")
-    st.markdown(r"""
-    Try **EVERY** combination.
-    *   Depth: [3, 5, 10]
-    *   LR: [0.01, 0.1]
-    *   Total: $3 \times 2 = 6$ runs.
-    *   **Pros**: Guaranteed to find the best in the grid.
-    *   **Cons**: Explodes exponentially ($O(n^d)$). Impossible for many parameters.
-    """)
+    st.markdown("Try **EVERY** combination. Guaranteed to find the best, but slow.")
+    st.code("""
+from sklearn.model_selection import GridSearchCV
+
+param_grid = {
+    'C': [0.1, 1, 10],
+    'kernel': ['linear', 'rbf']
+}
+grid = GridSearchCV(SVC(), param_grid, cv=5)
+grid.fit(X_train, y_train)
+
+print(grid.best_params_)
+    """, language="python")
 
 with tab_rand:
     st.subheader("Random Search 🎲")
-    st.markdown(r"""
-    Try **RANDOM** combinations.
-    *   Depth: RandomInt(3, 10)
-    *   LR: RandomFloat(0.01, 0.1)
-    *   **Pros**: Surprisingly effective. Often beats Grid Search because some parameters matter more than others.
-    *   **Cons**: Might miss the absolute peak.
-    """)
+    st.markdown("Try **RANDOM** combinations. Faster and often better.")
+    st.code("""
+from sklearn.model_selection import RandomizedSearchCV
+from scipy.stats import uniform
 
-with tab_bayes:
-    st.subheader("Bayesian Optimization 🧠")
-    st.markdown(r"""
-    **Smart Search**.
-    1.  Try a few points.
-    2.  Build a probabilistic model (Gaussian Process) of the performance surface.
-    3.  Predict where the best point is likely to be.
-    4.  Go there.
-    *   **Pros**: Very efficient. Finds global optima with few runs.
-    """)
-
-# --- 4. Cross-Validation Strategies ---
-st.header("4. Cross-Validation Strategies")
-st.markdown(r"""
-Never tune on the Test Set. That is cheating (Data Leakage).
-Use **Cross-Validation (CV)**.
-
-*   **K-Fold CV**: Split data into $K$ chunks. Train on $K-1$, Validate on 1. Rotate. Average the scores.
-*   **Stratified K-Fold**: Ensures each chunk has the same % of wins/losses as the whole dataset. (Crucial for Imbalanced Data).
-*   **Time Series Split**: Train on Past, Validate on Future. (Never shuffle time!).
-""")
+param_dist = {
+    'C': uniform(0.1, 10),  # Any float between 0.1 and 10.1
+    'kernel': ['linear', 'rbf']
+}
+rand = RandomizedSearchCV(SVC(), param_dist, n_iter=10, cv=5)
+rand.fit(X_train, y_train)
+    """, language="python")
 
 # --- 6. Visualization ---
 st.header("6. Visualization: The Validation Curve")
@@ -121,8 +178,9 @@ with col_viz:
 # --- 8. Super Summary ---
 st.header("8. Super Summary 🦸")
 st.info(r"""
-*   **Goal**: Find the settings that generalize best.
-*   **Tradeoff**: Bias vs Variance. You want the Goldilocks zone.
-*   **Strategy**: Use Random Search + Stratified K-Fold CV.
-*   **Rule**: If Training Error is low but Validation Error is high -> **Overfitting**.
+*   **Goal**: Generalization.
+*   **Cross-Validation**: The standard way to evaluate models reliably.
+*   **Stratified**: Use for Classification.
+*   **Time Series**: Use for Forecasting.
+*   **Grid/Random Search**: Use to automate tuning.
 """)

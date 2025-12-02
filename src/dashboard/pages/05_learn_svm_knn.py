@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 from src.dashboard.components.navigation import sidebar_navigation
 from src.dashboard.components.mermaid import render_mermaid
-from src.dashboard.components.toy_datasets import generate_moons, generate_circles
+from src.dashboard.components.toy_datasets import generate_moons, generate_circles, generate_linear
 
 st.set_page_config(page_title="SVM & KNN", page_icon="📐", layout="wide")
 sidebar_navigation()
@@ -191,39 +191,88 @@ with tab1:
     """)
 
 # ==========================================
-# KNN SECTION (ADAPTED TO NEW STYLE)
+# KNN SECTION (PLATINUM STANDARD)
 # ==========================================
 with tab2:
-    st.header("K-Nearest Neighbors (KNN)")
+    st.header("K-Nearest Neighbors (KNN): The Lazy Learner")
 
-    # --- 1. Core Model Definition ---
-    st.subheader("1. Core Model Definition")
-    st.markdown("""
-    KNN is a **Non-Parametric** method. It doesn't learn a formula ($w, b$). It memorizes the data.
+    # --- 1. Intuition ---
+    st.subheader("1. Intuition: The Real Estate Agent")
+    st.markdown(r"""
+    Imagine you want to estimate the price of a house. What do you do?
+    You look at the **3 nearest houses** that sold recently.
+    *   House A (Next door): Sold for \$500k.
+    *   House B (Across street): Sold for \$510k.
+    *   House C (Down block): Sold for \$490k.
 
-    **The Rule:**
-    To classify a new point $x_{new}$:
-    1.  Find the set $N_k$ of the $k$ closest training points.
-    2.  Take a vote.
-    """)
-    st.latex(r"\hat{y} = \text{mode} \{ y_i : x_i \in N_k(x_{new}) \}")
+    **Prediction**: Your house is probably around \$500k.
 
-    # --- 2. Geometry ---
-    st.subheader("2. Geometry: Voronoi Tessellation")
-    st.markdown("""
-    *   **Distance Metric**: How do we define "Close"? Usually Euclidean Distance.
-    *   **Voronoi Cells**: If $k=1$, the space is divided into regions based on which point is closest.
-    *   **Jagged Boundaries**: KNN boundaries can be very complex and follow the data closely.
+    This is KNN.
+    *   **"Tell me who your neighbors are, and I'll tell you who you are."**
+    *   It assumes that similar things exist in close proximity.
     """)
 
-    # --- 3. Constraints / Objective ---
-    st.subheader("3. Optimization (Lazy Learning)")
-    st.markdown("""
-    KNN has **No Training Phase**.
-    *   **Training**: Store Data. (Cost: $O(1)$).
-    *   **Prediction**: Calculate distance to ALL points. (Cost: $O(N)$).
-    *   This makes it "Lazy" but expensive at test time.
+    # --- 2. The Algorithm (Step-by-Step) ---
+    st.subheader("2. The Algorithm: A Concrete Example")
+    st.markdown("Let's classify a new tennis player **X**.")
+
+    st.markdown("**The Database (Training Set):**")
+    st.code("""
+    Player A: Rank=10, Points=2000 -> WIN
+    Player B: Rank=12, Points=1900 -> WIN
+    Player C: Rank=50, Points=500  -> LOSE
+    """, language="text")
+
+    st.markdown("**The New Player X:** Rank=11, Points=1950.")
+
+    st.markdown("**Step 1: Calculate Distances** (Euclidean)")
+    st.latex(r"d(X, A) = \sqrt{(11-10)^2 + (1950-2000)^2} = \sqrt{1 + 2500} \approx 50.01")
+    st.latex(r"d(X, B) = \sqrt{(11-12)^2 + (1950-1900)^2} = \sqrt{1 + 2500} \approx 50.01")
+    st.latex(r"d(X, C) = \sqrt{(11-50)^2 + (1950-500)^2} = \sqrt{1521 + 2102500} \approx 1450")
+
+    st.markdown("**Step 2: Find Neighbors (K=3)**")
+    st.markdown("*   Neighbors = {A, B, C} (Since we only have 3).")
+    st.markdown("*   Closest are A and B.")
+
+    st.markdown("**Step 3: Vote**")
+    st.markdown("*   A says WIN.")
+    st.markdown("*   B says WIN.")
+    st.markdown("*   C says LOSE.")
+    st.markdown("**Result**: 2 vs 1. Prediction = **WIN**.")
+
+    # --- 3. Distance Metrics ---
+    st.subheader("3. Distance Metrics: How do we measure 'Close'?")
+    st.markdown("The choice of ruler changes the result.")
+
+    col_d1, col_d2 = st.columns(2)
+    with col_d1:
+        st.markdown("**Euclidean (L2 Norm)**")
+        st.latex(r"d(x, y) = \sqrt{\sum (x_i - y_i)^2}")
+        st.markdown("The straight line distance (As the crow flies). Good for physical space.")
+    with col_d2:
+        st.markdown("**Manhattan (L1 Norm)**")
+        st.latex(r"d(x, y) = \sum |x_i - y_i|")
+        st.markdown("The taxi driver distance (Grid city). Good for high dimensions.")
+
+    # --- 4. The Curse of Dimensionality ---
+    st.subheader("4. The Curse of Dimensionality 👻")
+    st.markdown(r"""
+    KNN fails when you have too many features (dimensions).
+
+    *   **Intuition**: In 1D (Line), points are close. In 2D (Paper), they spread out. In 100D, the space is so vast that **all points are far away from each other**.
+    *   **Consequence**: You need exponentially more data to fill the space.
+    *   **Fix**: Use Dimensionality Reduction (PCA) before KNN.
     """)
+
+    # --- 5. Weighted KNN ---
+    st.subheader("5. Weighted KNN")
+    st.markdown(r"""
+    Should the neighbor 1km away have the same vote as the neighbor 1m away? **No.**
+
+    **Inverse Distance Weighting:**
+    """)
+    st.latex(r"w_i = \frac{1}{d(x_{new}, x_i)}")
+    st.markdown("Points that are closer shout louder. Points far away just whisper.")
 
     # --- 6. Visualization ---
     st.subheader("6. Visualization")
@@ -231,6 +280,8 @@ with tab2:
     col_viz_knn, col_controls_knn = st.columns([3, 1])
     with col_controls_knn:
         k_neighbors = st.slider("K (Neighbors)", 1, 20, 3, key="knn_k")
+        weights = st.selectbox("Weights", ["uniform", "distance"], key="knn_weights")
+        metric = st.selectbox("Metric", ["euclidean", "manhattan"], key="knn_metric")
         dataset_knn = st.selectbox("Dataset", ["Moons", "Circles"], key="knn_data")
 
     with col_viz_knn:
@@ -239,7 +290,7 @@ with tab2:
         else:
             X_k, y_k = generate_circles(n_samples=200, noise=0.1)
 
-        clf_k = KNeighborsClassifier(n_neighbors=k_neighbors)
+        clf_k = KNeighborsClassifier(n_neighbors=k_neighbors, weights=weights, metric=metric)
         clf_k.fit(X_k, y_k)
 
         # Grid
@@ -256,14 +307,14 @@ with tab2:
         fig_k.add_trace(go.Scatter(x=X_k[y_k==0, 0], y=X_k[y_k==0, 1], mode='markers', marker=dict(color='red')))
         fig_k.add_trace(go.Scatter(x=X_k[y_k==1, 0], y=X_k[y_k==1, 1], mode='markers', marker=dict(color='blue')))
 
-        fig_k.update_layout(title=f"KNN Decision Boundary (K={k_neighbors})", height=500)
+        fig_k.update_layout(title=f"KNN (K={k_neighbors}, Weights={weights})", height=500)
         st.plotly_chart(fig_k, use_container_width=True)
 
     # --- 8. Super Summary ---
     st.subheader("8. Super Summary 🦸")
-    st.info("""
-    *   **Goal**: Classify based on similarity to neighbors.
-    *   **Math**: Distance Metrics (Euclidean, Manhattan).
-    *   **Key Insight**: "You are the average of your 5 closest friends."
-    *   **Knobs**: $K$ controls smoothness. Low K = Overfitting (Jagged). High K = Underfitting (Smooth).
+    st.info(r"""
+    *   **Goal**: Classify based on similarity.
+    *   **Math**: $d(x, y) = \sqrt{\sum (x_i - y_i)^2}$.
+    *   **Key Insight**: "Birds of a feather flock together."
+    *   **Knobs**: $K$ (Smoothness), Weights (Distance vs Uniform), Metric (Euclidean vs Manhattan).
     """)

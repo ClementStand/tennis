@@ -12,118 +12,95 @@ st.markdown("""
 > But what does that actually mean? And how do Containers talk to each other?
 """)
 
-# --- SECTION 1: NETWORKING 101 (PRE-DOCKER) ---
-st.header("1. Networking 101: The City Analogy 🏙️")
-st.markdown("Before we touch Docker, we must understand how computers talk.")
-
-col1, col2 = st.columns(2)
-with col1:
-    st.info("**1. The IP Address (The Building Address)**")
-    st.markdown("""
-    Every computer has an address.
-    *   `192.168.1.5`: Your Laptop's address on the Wifi.
-    *   `127.0.0.1` (**Localhost**): "Me". Always points to yourself.
-    *   `0.0.0.0`: "Everyone". Listen to anyone who calls.
-    """)
-
-with col2:
-    st.warning("**2. The Port (The Apartment Number)**")
-    st.markdown("""
-    One building (IP) has many apartments (Apps).
-    *   **Port 80**: The Web Server Apartment.
-    *   **Port 5432**: The Database Apartment.
-    *   **Port 22**: The SSH Admin Apartment.
-
-    To visit a website, you need **IP + Port**: `192.168.1.5:80`.
-    """)
-
-st.markdown("---")
-
-# --- SECTION 2: THE DOCKER BRIDGE ---
-st.header("2. The Docker Bridge: A Virtual Router 🌉")
+# --- SECTION 1: NETWORKING 101 ---
+st.header("1. Networking 101: The Basics 🏙️")
 st.markdown("""
-When you install Docker, it creates a **Virtual Router** inside your laptop called `docker0`.
-*   It creates a private network (usually `172.17.0.x`).
-*   Your laptop is the **Gateway** (`172.17.0.1`).
-*   Every container gets its own private IP (e.g., `172.17.0.2`).
+Before Docker, we must understand the basics:
+*   **IP Address**: The unique address of a machine (e.g., `192.168.1.5`).
+*   **Port**: The specific door for an application (e.g., `80` for Web, `5432` for DB).
+*   **Localhost**: `127.0.0.1` (Yourself).
 """)
 
-render_mermaid("""
-graph TD
-    Laptop["Laptop (Host) <br> 192.168.1.5"]
+# --- SECTION 2: NETWORK MODES ---
+st.header("2. Docker Network Modes 🔀")
+st.markdown("Docker offers different ways to connect containers.")
 
-    subgraph Docker_Network ["Docker Bridge Network (172.17.0.x)"]
-        Router["Virtual Router (docker0) <br> 172.17.0.1"]
-        C1["Container A (Web) <br> 172.17.0.2"]
-        C2["Container B (DB) <br> 172.17.0.3"]
-    end
+tab_bridge, tab_host, tab_none, tab_custom = st.tabs(["Bridge (Default)", "Host", "None", "Custom"])
 
-    Laptop <--> Router
-    Router <--> C1
-    Router <--> C2
-    C1 <--> C2
-""", height=350)
+with tab_bridge:
+    st.subheader("Bridge Network (The Virtual Router)")
+    st.markdown("""
+    *   **Default**: If you don't specify anything, this is used.
+    *   **Isolation**: Containers get a private IP (e.g., `172.17.0.2`).
+    *   **Communication**: They can talk to each other if you know the IP.
+    *   **Access**: Outside world needs **Port Mapping** (`-p`) to get in.
+    """)
+    render_mermaid("""
+    graph TD
+        Laptop["Laptop (Host)"] <--> Router["Docker Bridge (docker0)"]
+        Router <--> C1["Container A (172.17.0.2)"]
+        Router <--> C2["Container B (172.17.0.3)"]
+    """, height=200)
 
-st.success("**Key Concept**: Containers can talk to each other directly using these internal IPs!")
+with tab_host:
+    st.subheader("Host Network (No Isolation)")
+    st.markdown("""
+    *   **Concept**: The container shares the **Host's IP**.
+    *   **Performance**: Faster (no routing overhead).
+    *   **Risk**: Port conflicts! You can't run two Nginx containers on Port 80.
+    *   **Command**: `docker run --network host ...`
+    """)
 
-st.markdown("---")
+with tab_none:
+    st.subheader("None Network (Total Isolation)")
+    st.markdown("""
+    *   **Concept**: No network card. No Internet. No talking to anyone.
+    *   **Use Case**: High security jobs (e.g., generating keys).
+    *   **Command**: `docker run --network none ...`
+    """)
+
+with tab_custom:
+    st.subheader("Custom Networks (The Best Way)")
+    st.markdown("""
+    *   **Concept**: Create your own private island.
+    *   **Benefit**: **Automatic DNS**. You can ping containers by **Name**.
+    """)
+    st.code("""
+# 1. Create Network
+docker network create my-app-net
+
+# 2. Run Containers
+docker run --network my-app-net --name db postgres
+docker run --network my-app-net --name web nginx
+
+# 3. Magic
+# Inside 'web', you can simply do: ping db
+    """, language="bash")
 
 # --- SECTION 3: PORT MAPPING ---
 st.header("3. Port Mapping: The Concierge 🛎️")
 st.markdown("""
-**The Problem**: The outside world (Internet) cannot see `172.17.0.2`. That IP is private.
-**The Solution**: Port Mapping (`-p`).
-
-We tell Docker:
-> "If anyone knocks on the Laptop's **Port 8080**, forward them to the Container's **Port 80**."
+**The Problem**: The outside world cannot see the Bridge Network.
+**The Solution**: Forward a Host Port to a Container Port.
 """)
 
-col_ex, col_diag = st.columns([1, 1])
-
-with col_ex:
-    st.code("docker run -p 8080:80 nginx", language="bash")
-    st.markdown("""
-    *   **8080 (Host Port)**: The public door. You can change this (e.g., to 3000 or 5000).
-    *   **80 (Container Port)**: The private door. Nginx *must* listen on this. You usually can't change this without configuring Nginx.
-    """)
-
-with col_diag:
-    render_mermaid("""
-    graph LR
-        User["User"] -->|Request| HostPort["Host:8080"]
-        HostPort -->|Forwarding Rule| ContPort["Container:80"]
-        ContPort --> App["Nginx App"]
-    """, height=200)
-
-st.markdown("---")
-
-# --- SECTION 4: DNS (SERVICE DISCOVERY) ---
-st.header("4. DNS: The Phonebook 📒")
+st.code("docker run -p 8080:80 nginx", language="bash")
 st.markdown("""
-**The Problem**: Container IPs (`172.17.0.2`) change every time you restart them.
-**The Solution**: **DNS** (Domain Name System).
-
-Docker maintains an internal phonebook.
-*   You name a container `my-db`.
-*   Docker says: "Okay, `my-db` is currently at `172.17.0.2`."
-*   If `my-db` restarts and gets `172.17.0.99`, Docker updates the phonebook.
-
-**Your Code**:
-```python
-# BAD: Hardcoded IP
-connect("172.17.0.2")
-
-# GOOD: Use the Container Name
-connect("my-db")
-```
+*   **8080**: Host Port (Public).
+*   **80**: Container Port (Private).
 """)
 
-st.markdown("---")
+render_mermaid("""
+graph LR
+    User["User"] -->|Request| HostPort["Host:8080"]
+    HostPort -->|Forwarding Rule| ContPort["Container:80"]
+    ContPort --> App["Nginx App"]
+""", height=200)
 
-# --- SECTION 5: EXERCISES ---
-st.header("5. Exercises 📝")
+# --- SECTION 4: EXERCISES ---
+st.header("4. Exercises 📝")
 st.info("""
-1.  **Run**: `docker run -d --name my-web -p 8080:80 nginx`.
-2.  **Inspect**: `docker inspect my-web`. Find the `IPAddress`. It will be something like `172.17.0.x`.
-3.  **Ping**: Run another container: `docker run -it alpine ping my-web`. It works! Docker resolves the name `my-web` to the IP.
+1.  **Bridge**: Run `docker run -d --name web nginx`. Inspect its IP.
+2.  **Host**: Run `docker run --rm --network host alpine ip addr`. See? It has YOUR IP.
+3.  **Custom**: Create a network. Connect two containers. Ping them by name.
 """)

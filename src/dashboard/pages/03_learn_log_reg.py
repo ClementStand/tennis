@@ -147,8 +147,30 @@ with col_viz:
     fig.update_layout(title=f"Logistic Regression (C={C_param})", height=500)
     st.plotly_chart(fig, use_container_width=True)
 
-# --- 7. Hyperparameters ---
-st.header("7. Hyperparameters & Behavior")
+# --- 7. How to do it in Python ---
+st.header("7. How to do it in Python 🐍")
+st.code("""
+from sklearn.linear_model import LogisticRegression
+
+# 1. Initialize
+model = LogisticRegression(C=1.0, solver='lbfgs')
+
+# 2. Train
+model.fit(X_train, y_train)
+
+# 3. Predict Class (0 or 1)
+y_pred = model.predict(X_test)
+
+# 4. Predict Probability (0.0 to 1.0)
+y_prob = model.predict_proba(X_test)[:, 1]
+
+# 5. Inspect Weights
+print(f"Weights: {model.coef_}")
+print(f"Bias: {model.intercept_}")
+""", language="python")
+
+# --- 8. Hyperparameters & Behavior ---
+st.header("8. Hyperparameters & Behavior")
 st.markdown("""
 *   **C (Inverse Regularization)**:
     *   **High C**: Weak regularization. Model trusts training data more. Can overfit.

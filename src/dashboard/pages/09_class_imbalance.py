@@ -1,4 +1,4 @@
-```python
+
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
@@ -106,6 +106,38 @@ with col_viz:
 
     fig.update_layout(title=f"Decision Boundary (Weight={weight}, SMOTE={smote_on})", height=500)
     st.plotly_chart(fig, use_container_width=True)
+
+# --- 7. How to do it in Python ---
+st.header("7. How to do it in Python 🐍")
+tab_weight_code, tab_smote_code = st.tabs(["Class Weights", "SMOTE"])
+
+with tab_weight_code:
+    st.code("""
+from sklearn.linear_model import LogisticRegression
+
+# Option A: Auto-calculate weights
+model = LogisticRegression(class_weight='balanced')
+
+# Option B: Manual weights (e.g., 1:10 ratio)
+model = LogisticRegression(class_weight={0: 1, 1: 10})
+
+model.fit(X_train, y_train)
+    """, language="python")
+
+with tab_smote_code:
+    st.code("""
+from imblearn.over_sampling import SMOTE
+from sklearn.model_selection import train_test_split
+
+# 1. Initialize SMOTE
+smote = SMOTE(random_state=42)
+
+# 2. Resample ONLY the training data (Never test data!)
+X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
+
+# 3. Train on new data
+model.fit(X_train_resampled, y_train_resampled)
+    """, language="python")
 
 # --- 8. Super Summary ---
 st.header("8. Super Summary 🦸")

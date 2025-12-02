@@ -11,73 +11,115 @@ sidebar_navigation()
 
 st.title("📉 Optimization: The Engine of Learning")
 
-# --- 1. Core Model Definition ---
-st.header("1. Core Model Definition")
+# --- 1. Intuition ---
+st.header("1. Intuition: The Hiker in the Fog 🌫️")
 st.markdown(r"""
-Machine Learning is fundamentally an **Optimization Problem**.
-We define a **Loss Function** $J(w)$ that measures "Badness".
-Our goal is to find the weights $w^*$ that minimize this badness.
+Imagine you are lost on a mountain at night. There is thick fog, so you can't see the village at the bottom.
+You want to get down as fast as possible.
 
-**The Algorithm: Gradient Descent**
-Imagine you are a blind hiker on a mountain. You want to reach the bottom (Minimum Loss).
-1.  Feel the slope under your feet ($\nabla J$).
-2.  Take a step downhill.
-3.  Repeat.
+**What do you do?**
+1.  **Feel the ground** with your foot.
+2.  Find the direction that slopes **down** the steepest.
+3.  Take a step in that direction.
+4.  Repeat.
 
-**The Update Rule:**
-""")
-st.latex(r"w_{t+1} = w_t - \eta \cdot \nabla J(w_t)")
-st.markdown(r"""
-*   $w$: The weights (parameters).
-*   $\nabla J$: The **Gradient** (Steepest Ascent).
-*   $\eta$ (Eta): The **Learning Rate** (Step Size).
+This is **Gradient Descent**.
+*   **Mountain**: The Loss Function (Error).
+*   **Altitude**: The value of the Loss (Lower is better).
+*   **Coordinates (Lat/Long)**: The Weights ($w$) of your model.
+*   **Steepness**: The Gradient ($\nabla J$).
 """)
 
-# --- 2. Geometry / Structure ---
-st.header("2. Geometry: The Loss Landscape")
+# --- 2. The Math (Step-by-Step) ---
+st.header("2. The Math: Step-by-Step Walkthrough")
 st.markdown(r"""
-*   **Convex**: A perfect bowl. Has one global minimum. (e.g., Linear/Logistic Regression). Easy to solve.
-*   **Non-Convex**: A rugged landscape with many peaks and valleys. Has many **Local Minima**. (e.g., Neural Networks). Hard to solve.
+Let's trace exactly what happens during **one single step** of learning.
 
-**The Gradient Vector**:
-The gradient is a vector of partial derivatives. It points **Uphill**.
+**Scenario**:
+*   We have a simple model: $Loss = w^2$. (A parabola).
+*   Current Weight: $w = 3$.
+*   Learning Rate ($\eta$): $0.1$.
+
+**Goal**: Reduce the Loss.
 """)
-st.latex(r"\nabla J(w) = \left[ \frac{\partial J}{\partial w_1}, \frac{\partial J}{\partial w_2}, \dots \right]^T")
 
-st.markdown("**Why the Minus Sign?**")
-st.latex(r"\text{If } \frac{\partial J}{\partial w} > 0 \implies \text{Slope is Positive (Uphill)} \implies \text{We must go Left (Decrease } w\text{)}")
-st.latex(r"\text{If } \frac{\partial J}{\partial w} < 0 \implies \text{Slope is Negative (Downhill)} \implies \text{We must go Right (Increase } w\text{)}")
+col_step1, col_step2, col_step3 = st.columns(3)
+
+with col_step1:
+    st.markdown("### Step 1: Calculate Gradient")
+    st.markdown(r"The Gradient is the derivative (slope).")
+    st.latex(r"\frac{\partial Loss}{\partial w} = \frac{\partial}{\partial w} (w^2) = 2w")
+    st.markdown(r"At $w=3$:")
+    st.latex(r"\text{Gradient} = 2 \times 3 = \mathbf{6}")
+    st.markdown("Positive slope means 'Uphill is to the Right'.")
+
+with col_step2:
+    st.markdown("### Step 2: Calculate Step")
+    st.markdown(r"We want to go **Downhill** (Left).")
+    st.latex(r"\text{Step} = - \eta \times \text{Gradient}")
+    st.latex(r"\text{Step} = - 0.1 \times 6 = \mathbf{-0.6}")
+
+with col_step3:
+    st.markdown("### Step 3: Update Weight")
+    st.latex(r"w_{new} = w_{old} + \text{Step}")
+    st.latex(r"w_{new} = 3 - 0.6 = \mathbf{2.4}")
+    st.markdown("New Loss: $2.4^2 = 5.76$ (Better than $3^2=9$!)")
+
+st.success("We successfully descended from Loss=9 to Loss=5.76. Repeat this 100 times, and we reach $w=0$.")
 
 # --- 3. Advanced Optimizers (Platinum Depth) ---
-st.header("3. Advanced Optimizers: Beyond Vanilla GD")
-st.markdown("Vanilla Gradient Descent has problems. It gets stuck in flat areas (plateaus) and oscillates in ravines.")
+st.header("3. Advanced Optimizers: Adam & Friends")
+st.markdown("Vanilla Gradient Descent is slow and dumb. Modern AI uses **Adam**.")
 
-tab_mom, tab_adam, tab_sgd = st.tabs(["Momentum", "Adam", "Batch vs SGD"])
+tab_mom, tab_adam, tab_sgd = st.tabs(["Momentum", "Adam (The King)", "Batch vs SGD"])
 
 with tab_mom:
     st.subheader("Momentum: The Heavy Ball 🎳")
     st.markdown(r"""
-    Imagine a heavy ball rolling down the hill. It gains **Momentum**.
-    *   If the gradient is small (flat), the ball keeps rolling because of its speed.
-    *   This helps it power through small bumps and plateaus.
+    **Problem**: If the surface is flat (plateau), gradients are tiny. Learning stops.
+    **Solution**: Give the optimizer **Mass**.
 
-    **The Math:**
-    We keep a "Velocity" vector $v$.
+    If a heavy ball rolls down a hill, it gains **Velocity**. Even if the hill flattens out, the ball keeps rolling due to inertia.
+
+    **The Math**:
     """)
-    st.latex(r"v_{t+1} = \gamma v_t + \eta \nabla J(w_t)")
-    st.latex(r"w_{t+1} = w_t - v_{t+1}")
-    st.markdown(r"*   $\gamma$ (Gamma): Friction (usually 0.9). Retains 90% of previous speed.")
+    st.latex(r"v_{t} = \gamma v_{t-1} + \eta \nabla J(w_t)")
+    st.latex(r"w_{t+1} = w_t - v_{t}")
+    st.markdown(r"""
+    *   $v_t$: The velocity vector. Accumulates past gradients.
+    *   $\gamma$ (Gamma): Friction (usually 0.9). We keep 90% of our previous speed.
+    """)
 
 with tab_adam:
-    st.subheader("Adam: The Smart Hiker 🧠")
+    st.subheader("Adam: Adaptive Moment Estimation 🧠")
     st.markdown(r"""
-    **Ada**ptive **M**oment Estimation.
-    *   It adapts the learning rate for *each parameter* individually.
-    *   **Sparse Features**: Rarely updated parameters get huge steps.
-    *   **Frequent Features**: Frequently updated parameters get small steps.
+    Adam is the **Gold Standard**. It combines two great ideas:
+    1.  **Momentum** (Keep moving forward).
+    2.  **RMSProp** (Scale learning rate by volatility).
 
-    It combines Momentum (First Moment) and RMSProp (Second Moment).
-    It is the **Default** optimizer for Deep Learning today.
+    **The Logic**:
+    *   "If a parameter has huge gradients (very steep), **slow down** to be careful."
+    *   "If a parameter has tiny gradients (very flat), **speed up** to make progress."
+
+    **The Full Math (Simplified):**
+    """)
+
+    col_m, col_v = st.columns(2)
+    with col_m:
+        st.markdown("**1. First Moment (Momentum)**")
+        st.markdown("Average of past gradients.")
+        st.latex(r"m_t = \beta_1 m_{t-1} + (1-\beta_1) \nabla J")
+    with col_v:
+        st.markdown("**2. Second Moment (Variance)**")
+        st.markdown("Average of past squared gradients (Volatility).")
+        st.latex(r"v_t = \beta_2 v_{t-1} + (1-\beta_2) (\nabla J)^2")
+
+    st.markdown("**3. The Update Rule**")
+    st.latex(r"w_{t+1} = w_t - \frac{\eta}{\sqrt{v_t} + \epsilon} m_t")
+    st.markdown(r"""
+    *   We divide by $\sqrt{v_t}$.
+    *   If variance $v_t$ is **High** (Steep/Volatile), we divide by a big number -> **Small Step**.
+    *   If variance $v_t$ is **Low** (Flat/Stable), we divide by a small number -> **Big Step**.
     """)
 
 with tab_sgd:
@@ -122,7 +164,7 @@ with col_viz:
 
     for _ in range(steps):
         grad_x = 2 * curr_x
-        grad_y = 2 * curr_y # + 5 * np.sin(curr_y) # Add some ruggedness? No, keep simple for demo
+        grad_y = 2 * curr_y
 
         if optimizer == "Momentum":
             vel_x = momentum * vel_x + lr * grad_x
@@ -150,12 +192,27 @@ with col_viz:
                       scene=dict(xaxis_title='w1', yaxis_title='w2', zaxis_title='Loss'), height=600)
     st.plotly_chart(fig, use_container_width=True)
 
+# --- 7. How to do it in Python ---
+st.header("7. How to do it in Python 🐍")
+st.markdown("Most sklearn models hide the optimizer, but you can control it.")
+st.code("""
+from sklearn.linear_model import SGDClassifier, LogisticRegression
+
+# Option A: Explicit Stochastic Gradient Descent
+sgd = SGDClassifier(loss='log_loss', learning_rate='adaptive', eta0=0.01)
+sgd.fit(X_train, y_train)
+
+# Option B: Configuring the Solver in Logistic Regression
+# 'lbfgs' is a quasi-Newton method (better than vanilla GD)
+lr = LogisticRegression(solver='lbfgs', max_iter=1000)
+lr.fit(X_train, y_train)
+""", language="python")
+
 # --- 8. Super Summary ---
 st.header("8. Super Summary 🦸")
 st.info(r"""
 *   **Goal**: Find the bottom of the valley (Min Loss).
 *   **Gradient**: The compass pointing Uphill. We go opposite.
 *   **Learning Rate**: Step size. Too big = Explode. Too small = Slow.
-*   **Momentum**: Helps plow through flat areas and dampen oscillations.
-*   **SGD**: Fast, noisy updates. **Batch**: Slow, precise updates.
+*   **Adam**: The smart optimizer that adapts speed for each parameter.
 """)
