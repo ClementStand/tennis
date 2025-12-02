@@ -1,50 +1,137 @@
-Hello world
+# 🎾 Tennis ML Platform: From Intuition to Production
 
-# Data Preprocessing Steps Explained
+**An interactive, open-source learning platform that teaches Machine Learning and Software Engineering using real ATP Tennis data.**
 
-This document explains the steps we took to prepare the tennis dataset for machine learning, following **best practices** to ensure a robust and reliable model.
+---
 
-## 1. Defining the Goal (Target Variable)
-We want to predict **who wins** the match.
-- We created a new target variable called `y`.
-- **Logic**:
-    - If **Player 1** is the Winner, `y = 1`.
-    - If **Player 2** is the Winner, `y = 0`.
-- This turns the problem into a "Binary Classification" task (predicting 1 or 0).
+## 📖 About The Project
 
-## 2. Choosing the Right Information (Feature Selection)
-We carefully selected which columns (features) to use for prediction (`X`).
-- **Kept**:
-    - **Numerical**: `Rank`, `Points`, `Odds`, `Best of` (sets). These directly relate to player strength.
-    - **Categorical**: `Series`, `Court`, `Surface`, `Round`. These describe the match conditions.
-- **Dropped**:
-    - `Winner` & `Score`: These are the *outcome*. Using them would be "cheating" (Data Leakage).
-    - `Tournament`, `Player_1`, `Player_2`: These have too many unique values (high cardinality). Including them without special techniques would create thousands of unnecessary columns and confuse the model.
+Most tutorials teach Machine Learning on boring datasets like "Iris Flowers" or "Titanic Survivors".
+**This project is different.**
 
-## 3. The Golden Rule: Split BEFORE You Touch (Train/Test Split)
-**Crucial Step**: Before we did any cleaning or calculations, we split the data into two parts:
-1.  **Training Set (80%)**: The data the model learns from.
-2.  **Test Set (20%)**: The "exam" questions the model has never seen.
+We built a full-stack application to predict the winner of professional tennis matches. But instead of just showing you the final code, we built an **Interactive Course** inside the app itself.
 
-**Why?**
-If we calculated averages (like median for missing values) using the *entire* dataset, information from the Test Set would "leak" into the Training Set. This is called **Data Leakage**, and it makes the model look better than it actually is. By splitting first, we ensure the Test Set remains completely pure and unseen.
+**You will learn:**
+1.  **Machine Learning**: From the math of Logistic Regression to the complexity of Random Forests and SVMs.
+2.  **Data Science**: Feature engineering, handling class imbalance, and rigorous validation.
+3.  **Software Engineering**: How computers actually work (Kernel/User Space), Docker containerization, and Git collaboration.
 
-## 4. Cleaning the Data (Imputation)
-Real-world data often has missing values (marked as `-1`).
-- **The Fix**: We used a `SimpleImputer`.
-- **Important**: We calculated the median *only* from the **Training Set**. We then used that same number to fill gaps in both the Training and Test sets.
+Everything is explained with **Intuition first**, then **Math**, then **Code**, and finally **Interactive Visualization**.
 
-## 5. Leveling the Playing Field (Scaling)
-The numerical data has very different ranges (Ranks 1-100 vs Points 0-16,000).
-- **The Fix**: We used a `StandardScaler`.
-- **Important**: We learned the mean and standard deviation *only* from the **Training Set**. We then applied this scaling to both sets. This simulates the real world where we don't know the distribution of future data.
+---
 
-## 6. Translating Words to Numbers (One-Hot Encoding)
-Computers do not understand text like "Hard Court".
-- **The Fix**: We used `OneHotEncoder`.
-- It creates a new binary (0 or 1) column for every category (e.g., `Surface_Clay`, `Surface_Hard`).
+## 📚 The Syllabus
 
-## 7. The Assembly Line (Pipeline)
-We wrapped all these steps into a **Pipeline**.
-- **Flow**: `Raw Data` -> `Imputer` -> `Scaler` -> `Encoder` -> `Clean Data`.
-- **Benefit**: The pipeline handles the complexity of "Fit on Train, Transform on Test" automatically, preventing mistakes and leakage.
+The application is divided into interactive modules:
+
+### 🧠 Part 1: Machine Learning
+*   **1. Data & Features**: Understanding the ATP dataset, Elo ratings, and "Form".
+*   **2. Logistic Regression**: The foundation of probability. Sigmoids and Log-Loss.
+*   **3. Trees & Forests**: Decision Trees, Entropy, and how Random Forests fix overfitting.
+*   **4. SVM & KNN**: Geometry-based classification. Margins and Neighbors.
+*   **5. Optimization**: How Gradient Descent actually works (sliding down the hill).
+*   **6. Metrics**: Why Accuracy is dangerous. Precision, Recall, F1, and ROC Curves.
+*   **7. Hyperparameters**: Grid Search and Cross-Validation.
+*   **8. Class Imbalance**: Handling datasets where one outcome is rare.
+*   **9. Model Comparison**: Benchmarking all models on the 2024 Test Set.
+
+### 💻 Part 2: Software Development & DevOps
+*   **1. Computer Architecture**: CPU, RAM, Kernel, System Calls, and Processes.
+*   **2. Docker Basics**: Images, Containers, Layers, and the "Matrix" analogy.
+*   **3. Docker Networking**: Bridges, NAT, DNS, and Packet Flow.
+*   **4. Docker Compose**: Orchestration and multi-container architectures.
+*   **5. Git Basics**: The DAG, Commits, Staging Area, and Time Travel.
+*   **6. Git Collaboration**: Branches, Merging, Conflicts, and Pull Requests.
+
+---
+
+## 🎮 Features
+
+*   **Model Playground**: A sandbox where you can pit players (e.g., Nadal vs. Federer) against each other, tweak their stats (Rank, Odds, Form), and see real-time predictions from trained models.
+*   **Interactive Plots**: Visualize Decision Boundaries, ROC Curves, and Calibration Plots using Plotly.
+*   **Real Data**: Trained on 20+ years of ATP Tennis matches (2000-2024).
+
+---
+
+## 🚀 Getting Started
+
+You can run this project in three ways:
+
+### Option 1: Streamlit Cloud (Easiest)
+[Click here to view the live app](https://tennis-ml-platform.streamlit.app)
+*(Note: Replace with your actual deployment URL)*
+
+### Option 2: Docker (Recommended for Devs)
+If you have Docker installed, this is the cleanest way to run the app.
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/ClementStand/tennis.git
+cd tennis
+
+# 2. Run with Compose
+docker compose up --build
+```
+The app will be available at `http://localhost:8501`.
+
+### Option 3: Local Python
+If you prefer running it directly on your machine:
+
+```bash
+# 1. Create a virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Run the app
+streamlit run src/dashboard/app.py
+```
+
+---
+
+## 🛠️ Tech Stack
+
+*   **Frontend**: [Streamlit](https://streamlit.io/) (Python-based UI)
+*   **Data Processing**: [Pandas](https://pandas.pydata.org/), [NumPy](https://numpy.org/)
+*   **Machine Learning**: [Scikit-Learn](https://scikit-learn.org/), [XGBoost](https://xgboost.readthedocs.io/)
+*   **Visualization**: [Plotly](https://plotly.com/)
+*   **Infrastructure**: [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker.com/compose/)
+
+---
+
+## 📂 Project Structure
+
+```text
+tennis/
+├── data/                   # Raw and processed CSV files
+├── models/                 # Trained .pkl models and metadata
+├── src/
+│   ├── dashboard/          # The Streamlit Application
+│   │   ├── app.py          # Main entry point
+│   │   ├── pages/          # Individual learning modules
+│   │   ├── components/     # Reusable UI widgets (Plots, Nav)
+│   │   └── utils/          # Helper functions
+│   └── preprocessing.py    # Data cleaning pipeline
+├── docker-compose.yml      # Container orchestration
+├── requirements.txt        # Python dependencies
+└── README.md               # You are here
+```
+
+---
+
+## 🤝 Contributing
+
+This is an open-source project! We welcome contributions.
+1.  Fork the repository.
+2.  Create a new branch (`git checkout -b feature/amazing-feature`).
+3.  Commit your changes (`git commit -m 'Add amazing feature'`).
+4.  Push to the branch (`git push origin feature/amazing-feature`).
+5.  Open a Pull Request.
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
