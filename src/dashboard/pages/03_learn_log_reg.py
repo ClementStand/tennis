@@ -58,7 +58,7 @@ graph LR
 
 # --- 3. The Mathematical "Why": Odds & Log-Odds ---
 st.header("3. The Mathematical Intuition: From Odds to Sigmoid")
-st.markdown("""
+st.markdown(r"""
 Why do we use the **Sigmoid** function? It's not arbitrary. It comes from a very natural assumption about **Log-Odds**.
 
 ### 3.1. The Problem with Linear Regression
@@ -72,7 +72,7 @@ We need a link function to bridge the gap between the linear world ($-\infty, \i
 First, let's talk about **Odds**. If the probability of winning is $P$, the odds are:
 """)
 st.latex(r"\text{Odds} = \frac{P}{1-P}")
-st.markdown("""
+st.markdown(r"""
 *   **Range**: If $P \in [0, 1)$, then $\text{Odds} \in [0, \infty)$.
 *   **Example**: If $P=0.8$ (80% chance), Odds = $0.8 / 0.2 = 4$. We say "4 to 1 odds".
 
@@ -81,7 +81,7 @@ The range $[0, \infty)$ is better, but still restricted (must be positive).
 Let's take the **Natural Logarithm** of the odds. This is called the **Logit** function.
 """)
 st.latex(r"\text{Log-Odds} = \ln(\text{Odds}) = \ln\left(\frac{P}{1-P}\right)")
-st.markdown("""
+st.markdown(r"""
 *   **Range**: If Odds $\in [0, \infty)$, then Log-Odds $\in (-\infty, \infty)$.
 *   **Symmetry**:
     *   $P=0.5 \implies \text{Odds}=1 \implies \text{Log-Odds}=0$.
@@ -94,7 +94,7 @@ So, **Logistic Regression makes one simple assumption**:
 > **The Log-Odds are Linear with respect to the input features.**
 """)
 st.latex(r"\ln\left(\frac{P}{1-P}\right) = w^T x + b")
-st.markdown("""
+st.markdown(r"""
 This is the heart of the model. We are modeling the *log-odds* linearly.
 
 ### 3.5. Step 4: Solving for P (The Derivation)
