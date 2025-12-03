@@ -16,7 +16,7 @@ st.set_page_config(page_title="L1 & L2 Regularization", page_icon="🛡️", lay
 sidebar_navigation()
 
 st.title("🛡️ L1 (LASSO) and L2 (Ridge) Regularization")
-st.subheader("Mathematical Foundations and MLOps Verification")
+st.subheader("Mathematical Foundations")
 
 st.markdown("""
 **Elevator Pitch:** Regularization is the mathematical mechanism for controlling the **Bias-Variance Tradeoff**.
@@ -28,7 +28,6 @@ st.markdown(r"""
 *   **Derivation**: Derive the exact gradient update rules for L2 (Weight Decay) and L1 (Soft Thresholding).
 *   **Geometry**: Visualize the optimization landscape using **Lagrange Multipliers** (Circle vs. Diamond).
 *   **Bias-Variance**: Deeply understand how $\lambda$ shifts the model from High Variance to High Bias.
-*   **Verification**: Learn how to write **Unit Tests** to mathematically verify that your regularization is functioning correctly in production.
 """)
 
 # --- 2. Motivation: Bias-Variance Deep Dive ---
@@ -121,7 +120,7 @@ st.markdown("`<img src='l1_diamond.png'>`", unsafe_allow_html=True)
 st.caption("The loss contours often hit the **corners** of the diamond first. At a corner, one or more coordinates are **exactly zero**. This is the geometric origin of **Sparsity**.")
 
 # --- 5. Practical Implementation & MLOps ---
-st.header("4. Practical Implementation & MLOps Verification 🛠️")
+st.header("4. Practical Implementation 🛠️")
 
 st.markdown("""
 | Feature | L2 (Ridge) | L1 (Lasso) |
@@ -132,34 +131,7 @@ st.markdown("""
 | **Use Case** | Default for performance | Feature Selection / Interpretability |
 """)
 
-st.subheader("Code Quality & Verification")
-st.markdown("""
-In a professional MLOps environment, we do not trust "theoretical" regularization. We verify it with automated tests.
-""")
 
-st.markdown("**1. Unit Testing (Pytest)**")
-st.markdown("We write tests to assert the mathematical properties of our model.")
-st.code("""
-# tests/test_regularization.py (Excerpt)
-
-def test_regularization_shrinks_weights():
-    # Train High C (Weak Reg) vs Low C (Strong Reg)
-    # Assert that Strong Reg norm is < 50% of Weak Reg norm
-    assert reduction_ratio < 0.5
-
-def test_l1_sparsity():
-    # Train L1 vs L2
-    # Assert L1 has more zero coefficients
-    assert l1_zeros > l2_zeros
-""", language="python")
-
-st.markdown("**2. CI/CD Integration**")
-st.markdown("""
-These tests should run automatically in your **CI/CD Pipeline** (e.g., GitHub Actions).
-*   **Trigger**: On every `git push`.
-*   **Action**: Run `pytest`.
-*   **Blocker**: If `test_regularization_shrinks_weights` fails, the code is rejected. This prevents you from accidentally deploying a model where regularization is broken (e.g., by passing the wrong argument).
-""")
 
 # --- Interactive Playground ---
 st.header("5. Interactive Verification 🎮")
@@ -211,7 +183,6 @@ st.header("6. Summary & Assessment 📝")
 st.markdown(r"""
 *   **L2 (Ridge)**: Adds $\lambda \sum w^2$. Shrinks weights via $(1-2\eta\lambda)$ factor. Use for preventing overfitting while keeping all features.
 *   **L1 (Lasso)**: Adds $\lambda \sum |w|$. Snaps weights to zero via constant gradient. Use for feature selection.
-*   **MLOps**: Verification is key. Use unit tests to prove your regularization is active.
 """)
 
 with st.expander("Mastery Question 1"):
