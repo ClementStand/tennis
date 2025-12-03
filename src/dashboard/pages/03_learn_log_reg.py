@@ -56,8 +56,70 @@ graph LR
     style Prob fill:#e8f5e9
 """, height=200)
 
-# --- 3. Constraints / Objective / Loss ---
-st.header("3. The Optimization Problem")
+# --- 3. The Mathematical "Why": Odds & Log-Odds ---
+st.header("3. The Mathematical Intuition: From Odds to Sigmoid")
+st.markdown("""
+Why do we use the **Sigmoid** function? It's not arbitrary. It comes from a very natural assumption about **Log-Odds**.
+
+### 3.1. The Problem with Linear Regression
+If we tried to use standard Linear Regression ($y = w^T x + b$) for classification:
+1.  **Range Issue**: Linear regression predicts values from $-\infty$ to $+\infty$. Probabilities must be in $[0, 1]$.
+2.  **Meaning**: What does a prediction of 150 mean? Or -20?
+
+We need a link function to bridge the gap between the linear world ($-\infty, \infty$) and the probability world ($0, 1$).
+
+### 3.2. Step 1: Probability to Odds
+First, let's talk about **Odds**. If the probability of winning is $P$, the odds are:
+""")
+st.latex(r"\text{Odds} = \frac{P}{1-P}")
+st.markdown("""
+*   **Range**: If $P \in [0, 1)$, then $\text{Odds} \in [0, \infty)$.
+*   **Example**: If $P=0.8$ (80% chance), Odds = $0.8 / 0.2 = 4$. We say "4 to 1 odds".
+
+### 3.3. Step 2: Odds to Log-Odds (Logit)
+The range $[0, \infty)$ is better, but still restricted (must be positive).
+Let's take the **Natural Logarithm** of the odds. This is called the **Logit** function.
+""")
+st.latex(r"\text{Log-Odds} = \ln(\text{Odds}) = \ln\left(\frac{P}{1-P}\right)")
+st.markdown("""
+*   **Range**: If Odds $\in [0, \infty)$, then Log-Odds $\in (-\infty, \infty)$.
+*   **Symmetry**:
+    *   $P=0.5 \implies \text{Odds}=1 \implies \text{Log-Odds}=0$.
+    *   $P=0.9 \implies \text{Log-Odds} \approx 2.2$.
+    *   $P=0.1 \implies \text{Log-Odds} \approx -2.2$.
+
+### 3.4. Step 3: The Linear Assumption
+Now we have a quantity, **Log-Odds**, that spans $(-\infty, \infty)$, just like a linear equation!
+So, **Logistic Regression makes one simple assumption**:
+> **The Log-Odds are Linear with respect to the input features.**
+""")
+st.latex(r"\ln\left(\frac{P}{1-P}\right) = w^T x + b")
+st.markdown("""
+This is the heart of the model. We are modeling the *log-odds* linearly.
+
+### 3.5. Step 4: Solving for P (The Derivation)
+Now, let's solve for $P$ to get our prediction function.
+Let $z = w^T x + b$.
+""")
+st.latex(r"""
+\begin{aligned}
+\ln\left(\frac{P}{1-P}\right) &= z \\
+\frac{P}{1-P} &= e^z \quad \text{(Exponentiate both sides)} \\
+P &= e^z (1 - P) \\
+P &= e^z - P \cdot e^z \\
+P + P \cdot e^z &= e^z \\
+P(1 + e^z) &= e^z \\
+P &= \frac{e^z}{1 + e^z} \\
+P &= \frac{1}{1 + e^{-z}} \quad \text{(Divide top and bottom by } e^z \text{)}
+\end{aligned}
+""")
+st.markdown("""
+**Voila!** We have derived the **Sigmoid Function**.
+This explains *why* the sigmoid function is used. It's the natural consequence of assuming the log-odds are linear.
+""")
+
+# --- 4. Constraints / Objective / Loss ---
+st.header("4. The Optimization Problem")
 st.markdown("""
 We cannot use "Least Squares" (MSE) because it assumes errors are Gaussian (they are not; they are binary).
 We use **Maximum Likelihood Estimation (MLE)**.
@@ -77,8 +139,8 @@ st.markdown(r"""
 *   **If $y=0$**: We want $\hat{y} \approx 0$. If $\hat{y} \approx 1$, $\log(1-\hat{y}) \to -\infty$, so Loss $\to \infty$.
 """)
 
-# --- 4. Deeper Components (Gradient) ---
-st.header("4. The Gradient Update")
+# --- 5. Deeper Components (Gradient) ---
+st.header("5. The Gradient Update")
 st.markdown("""
 How do we find the best $w$? We use **Gradient Descent**.
 The derivative of the Log Loss with respect to weights is surprisingly simple:
@@ -91,8 +153,8 @@ st.markdown(r"""
 *   **Interpretation**: If we predicted too high ($\hat{y} > y$), we push $w$ in the opposite direction of $x$.
 """)
 
-# --- 5. What the Solution Looks Like ---
-st.header("5. The Solution: Log-Odds")
+# --- 6. What the Solution Looks Like ---
+st.header("6. The Solution: Interpreting Weights")
 st.markdown("""
 What does the model actually learn? It learns the **Log-Odds** of the positive class.
 """)
@@ -103,8 +165,8 @@ st.markdown("""
 *   This makes Logistic Regression highly **Interpretable**.
 """)
 
-# --- 6. Visualization ---
-st.header("6. Visualization")
+# --- 7. Visualization ---
+st.header("7. Visualization")
 
 col_viz, col_controls = st.columns([3, 1])
 with col_controls:
@@ -147,8 +209,8 @@ with col_viz:
     fig.update_layout(title=f"Logistic Regression (C={C_param})", height=500)
     st.plotly_chart(fig, use_container_width=True)
 
-# --- 7. How to do it in Python ---
-st.header("7. How to do it in Python 🐍")
+# --- 8. How to do it in Python ---
+st.header("8. How to do it in Python 🐍")
 st.code("""
 from sklearn.linear_model import LogisticRegression
 
@@ -169,8 +231,8 @@ print(f"Weights: {model.coef_}")
 print(f"Bias: {model.intercept_}")
 """, language="python")
 
-# --- 8. Hyperparameters & Behavior ---
-st.header("8. Hyperparameters & Behavior")
+# --- 9. Hyperparameters & Behavior ---
+st.header("9. Hyperparameters & Behavior")
 st.markdown("""
 *   **C (Inverse Regularization)**:
     *   **High C**: Weak regularization. Model trusts training data more. Can overfit.
@@ -178,8 +240,8 @@ st.markdown("""
 *   **Penalty**: L1 (Lasso) or L2 (Ridge). L1 can make weights exactly zero (Feature Selection).
 """)
 
-# --- 8. Super Summary ---
-st.header("8. Super Summary 🦸")
+# --- 10. Super Summary ---
+st.header("10. Super Summary 🦸")
 st.info("""
 *   **Goal**: Estimate probability of class 1.
 *   **Math**: Minimize Log Loss (Cross-Entropy).
